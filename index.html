@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Street View Containers</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #street-view {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="street-view"></div>
+    <script>
+      var panorama;
+      function initialize() {
+        panorama = new google.maps.StreetViewPanorama(
+            document.getElementById('street-view'),
+            {
+              position: {lat: 40.724871, lng: -73.950379},
+              pov: {heading: 340, pitch: 0},
+              zoomControl: false,
+              fullscreenControl: false,
+              addressControl: false,
+              panControl: false,
+              linksControl: false,
+              zoom: 1
+            });
+      }
+    </script>
+    <script async defer
+         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyANiDfdQzJPhx6Vrsy8nkPpwek9A4azbUE&callback=initialize">
+    </script>
+  </body>
+</html>
