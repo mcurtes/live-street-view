@@ -36,7 +36,7 @@
           {
             position: {lat: currentLat, lng: currentLon},
             pov: {heading: 340, pitch: 0},
-            zoom: 1
+            zoom: 1,
             zoomControl: false,
             fullscreenControl: false,
             addressControl: false,
@@ -55,9 +55,14 @@
         updatedLon = updatedPosition.coords.longitude;
         console.log("updatedLat: " + updatedLat + " updatedLon: " + updatedLon);
         panorama.setPosition({lat: updatedLat, lng: updatedLon});
+
+      // TODO: Also get and update device orientation AKA heading and pitch based on device compass and gyroscope
+        window.addEventListener('deviceorientation', function(event) {
+          console.log("currentHeading: " + event.alpha + " currentPitch: " + event.beta);
+        });
+      // end early attempt at getting device heading and pitch
       }
 
-      // TODO: Also set and update device orientation AKA heading based on device compass
     </script>
     <script async defer
          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyANiDfdQzJPhx6Vrsy8nkPpwek9A4azbUE&callback=getLocation">
