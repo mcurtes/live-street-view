@@ -25,6 +25,12 @@
         }
       }
     
+      window.addEventListener('deviceorientation', function(event) {
+        currentHeading = event.alpha;
+        currentPitch = event.beta;
+        console.log("currentHeading: " + currentHeading + " currentPitch: " + currentPitch);
+      });
+
       var panorama;
 
       function initialize(position) {
@@ -35,13 +41,14 @@
           document.getElementById('street-view'),
           {
             position: {lat: currentLat, lng: currentLon},
-            pov: {heading: 340, pitch: 0},
+            pov: {heading: currentHeading, pitch: 0}, //TODO: Handle case when we don't have a currentHeading.
             zoom: 1,
             zoomControl: false,
             fullscreenControl: false,
             addressControl: false,
             panControl: false,
             linksControl: false,
+            motionTrackingControl: false
           });
         watchLocation();
       }
@@ -55,12 +62,6 @@
         updatedLon = updatedPosition.coords.longitude;
         console.log("updatedLat: " + updatedLat + " updatedLon: " + updatedLon);
         panorama.setPosition({lat: updatedLat, lng: updatedLon});
-
-      // TODO: Also get and update device orientation AKA heading and pitch based on device compass and gyroscope
-        window.addEventListener('deviceorientation', function(event) {
-          console.log("currentHeading: " + event.alpha + " currentPitch: " + event.beta);
-        });
-      // end early attempt at getting device heading and pitch
       }
 
     </script>
