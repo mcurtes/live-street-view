@@ -21,16 +21,11 @@
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(initialize);
         } else { 
+          document.getElementById("street-view").innerHTML = "<p>Geolocation is not supported by this browser.</p>";
           console.warn = "Geolocation is not supported by this browser.";
         }
       }
     
-      window.addEventListener('deviceorientation', function(event) {
-        currentHeading = event.alpha;
-        currentPitch = event.beta;
-        console.log("currentHeading: " + currentHeading + " currentPitch: " + currentPitch);
-      });
-
       var panorama;
 
       function initialize(position) {
@@ -41,13 +36,14 @@
           document.getElementById('street-view'),
           {
             position: {lat: currentLat, lng: currentLon},
-            pov: {heading: currentHeading, pitch: 0}, //TODO: Handle case when we don't have a currentHeading.
+            pov: {heading: 0, pitch: 0}, //Set initial heading to 0 (due North) and pitch to 0 (horizon) in case we don't get one from the browser
             zoom: 1,
             zoomControl: false,
             fullscreenControl: false,
             addressControl: false,
             panControl: false,
             linksControl: false,
+            motionTracking: false,
             motionTrackingControl: false
           });
         watchLocation();
@@ -64,6 +60,25 @@
         panorama.setPosition({lat: updatedLat, lng: updatedLon});
       }
 
+      window.addEventListener('deviceorientation', function(event) {
+        // Listen for updates to device heading and pitch and then update Street View
+        // Subtract 90 degrees from pitch because the W3C method uses different values than Street View
+        // Subtract browser's reported heading from 360 because W3C uses different values than Street View
+        // W3C: https://developer.mozilla.org/en-US/docs/Web/API/DeviceOrientationEvent#Properties
+        // Street View: https://developers.google.com/web/fundamentals/native-hardware/device-orientation/
+        currentHeading = event.alpha;
+        currentPitch = event.beta;
+        console.log("currentHeading: " + currentHeading + " currentPitch: " + currentPitch);
+        if (currentHeading && currentPitch) {// if we got an orientation and pitch from the broswer, update both
+          panorama.setPov({heading: ((360-currentHeading)), pitch: (currentPitch - 90)});
+        }
+        else if (currentHeading) {
+          panorama.setPov({heading: ((360-currentHeading)), pitch: 0});
+        }
+        else if (currentPitch) {
+          panorama.setPov({heading: 0, pitch: (currentPitch - 90)});
+        }
+      });
     </script>
     <script async defer
          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyANiDfdQzJPhx6Vrsy8nkPpwek9A4azbUE&callback=getLocation">
