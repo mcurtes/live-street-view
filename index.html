@@ -25,11 +25,19 @@
         }
       }
     
-      window.addEventListener('deviceorientation', function(event) {
-        currentHeading = event.alpha;
-        currentPitch = event.beta;
-        console.log("currentHeading: " + currentHeading + " currentPitch: " + currentPitch);
-      });
+      var browserHeading = null;
+      var browserPitch = null;
+
+      window.addEventListener('deviceorientation', deviceOrientationListener, false);
+
+      function deviceOrientationListener(event) {
+        console.log("browserHeading: " + browserHeading + " browserPitch: " + browserPitch);
+        browserHeading = event.alpha;
+        browserPitch = event.beta;
+      }
+
+      // Subtract browser's reported heading from 360 to get value where 0 = due North. W3C uses different values than Street View. W3C: https://developer.mozilla.org/en-US/docs/Web/API/DeviceOrientationEvent#Properties  Street View: https://developers.google.com/web/fundamentals/native-hardware/device-orientation/      
+      var calculatedHeading = ((360 - browserHeading) % 360);
 
       var panorama;
 
@@ -37,11 +45,13 @@
         currentLat = position.coords.latitude;
         currentLon = position.coords.longitude;
         console.log("currentLat: " + currentLat + " currentLon: " + currentLon);
-        panorama = new google.maps.StreetViewPanorama(
+        if (browserHeading) {
+          console.log("calculatedHeading: " + calculatedHeading);
+          panorama = new google.maps.StreetViewPanorama(
           document.getElementById('street-view'),
           {
             position: {lat: currentLat, lng: currentLon},
-            pov: {heading: currentHeading, pitch: 0}, //TODO: Handle case when we don't have a currentHeading.
+            pov: {heading: calculatedHeading, pitch: 0},
             zoom: 1,
             zoomControl: false,
             fullscreenControl: false,
@@ -50,6 +60,24 @@
             linksControl: false,
             motionTrackingControl: false
           });
+        }
+        else {
+          alert("Could not fetch heading; defaulting calculatedHeading to 0"); //TODO: Figure out why this seems to always happen. Seems like it might be a timing issue, whereby we are calling this before we've had a chance to get heading
+          console.log("Could not fetch heading; defaulting calculatedHeading to 0");
+          panorama = new google.maps.StreetViewPanorama(
+          document.getElementById('street-view'),
+          {
+            position: {lat: currentLat, lng: currentLon},
+            pov: {heading: 0, pitch: 0},
+            zoom: 1,
+            zoomControl: false,
+            fullscreenControl: false,
+            addressControl: false,
+            panControl: false,
+            linksControl: false,
+            motionTrackingControl: false
+          });
+        }
         watchLocation();
       }
 
