@@ -8,50 +8,81 @@
         height: 100%;
         margin: 0;
         padding: 0;
+        font-family: Arial, sans-serif;
       }
       #street-view {
         height: 100%;
       }
     </style>
   </head>
-  <body onload="getLocation()">
+  <body>
+    <div>
+      <h1 id="heading"></h1>
+      <h1 id="lat-lon"></h1>
+    </div>
     <div id="street-view"></div>
     <script>
-      function getLocation() {
+      window.addEventListener('deviceorientation', deviceOrientationListener, false);
+
+      var browserHeading;
+      var convertedHeading;
+      var browserPitch;
+
+      function deviceOrientationListener(event) {
+        browserHeading = event.alpha;
+        browserPitch = event.beta;
+        convertHeading();
+      }
+
+      function convertHeading() {
+          /* Convert browser's reported heading to get value where 0 = due North, 90 = due East, etc. 
+          W3C uses different values than Street View. 
+          W3C: https://developer.mozilla.org/en-US/docs/Web/API/DeviceOrientationEvent#Properties  
+          Street View: https://developers.google.com/web/fundamentals/native-hardware/device-orientation/
+          */
+        if(browserHeading) {
+          convertedHeading = ((360 - browserHeading) % 360);          
+        }
+        document.getElementById("heading").innerHTML = "convertedHeading: " + convertedHeading;
+        console.log("convertedHeading: " + convertedHeading);
+      }
+
+      var initialLat;
+      var initialLon;
+      
+      function initializeGeolocation() {
         if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(initialize);
-        } else { 
-          console.warn = "Geolocation is not supported by this browser.";
+          navigator.geolocation.getCurrentPosition(getInitialLocation);
+        } else {
+          alert("Geolocation is not supported by this browser.");
         }
       }
     
-      var browserHeading = null;
-      var browserPitch = null;
+      initializeGeolocation();
 
-      window.addEventListener('deviceorientation', deviceOrientationListener, false);
-
-      function deviceOrientationListener(event) {
-        console.log("browserHeading: " + browserHeading + " browserPitch: " + browserPitch);
-        browserHeading = event.alpha;
-        browserPitch = event.beta;
+      function getInitialLocation(position) {
+        initialLat = position.coords.latitude;
+        initialLon = position.coords.longitude;
+        document.getElementById("lat-lon").innerHTML = "Lat: " + initialLat + ", Lon: " + initialLon;
+        console.log("initialLat: " + initialLat + ", initialLon: " + initialLon);
+        loadStreetViewScript();  //TODO: Figure out how to wait to trigger this until we've waited to see whether we're going to get both a location and heading. As is, it often gets to the "Could not fetch heading; defaulting convertedHeading to 0" case prematurely. CAN'T put it anywhere where it will get called each time the heading or location is updated.
       }
 
-      // Subtract browser's reported heading from 360 to get value where 0 = due North. W3C uses different values than Street View. W3C: https://developer.mozilla.org/en-US/docs/Web/API/DeviceOrientationEvent#Properties  Street View: https://developers.google.com/web/fundamentals/native-hardware/device-orientation/      
-      var calculatedHeading = ((360 - browserHeading) % 360);
+      function loadStreetViewScript() {
+        let script = document.createElement('script');
+        script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyANiDfdQzJPhx6Vrsy8nkPpwek9A4azbUE&callback=initializeStreetView";
+        document.body.append(script);
+      }
 
       var panorama;
 
-      function initialize(position) {
-        currentLat = position.coords.latitude;
-        currentLon = position.coords.longitude;
-        console.log("currentLat: " + currentLat + " currentLon: " + currentLon);
-        if (browserHeading) {
-          console.log("calculatedHeading: " + calculatedHeading);
+      function initializeStreetView() {
+        if (convertedHeading) {
           panorama = new google.maps.StreetViewPanorama(
           document.getElementById('street-view'),
           {
-            position: {lat: currentLat, lng: currentLon},
-            pov: {heading: calculatedHeading, pitch: 0},
+            position: {lat: initialLat, lng: initialLon},
+            pov: {heading: convertedHeading, pitch: 0},
             zoom: 1,
             zoomControl: false,
             fullscreenControl: false,
@@ -62,12 +93,12 @@
           });
         }
         else {
-          alert("Could not fetch heading; defaulting calculatedHeading to 0"); //TODO: Figure out why this seems to always happen. Seems like it might be a timing issue, whereby we are calling this before we've had a chance to get heading
-          console.log("Could not fetch heading; defaulting calculatedHeading to 0");
+          alert("Could not fetch heading; defaulting convertedHeading to 0");
+          console.log("Could not fetch heading; defaulting convertedHeading to 0");
           panorama = new google.maps.StreetViewPanorama(
           document.getElementById('street-view'),
           {
-            position: {lat: currentLat, lng: currentLon},
+            position: {lat: initialLat, lng: initialLon},
             pov: {heading: 0, pitch: 0},
             zoom: 1,
             zoomControl: false,
@@ -78,7 +109,7 @@
             motionTrackingControl: false
           });
         }
-        watchLocation();
+        watchLocation(); //TODO: Figure out how to accomplish this without the browser asking for location permission again
       }
 
       function watchLocation() {
@@ -88,13 +119,10 @@
       function updateLocation(updatedPosition) {
         updatedLat = updatedPosition.coords.latitude;
         updatedLon = updatedPosition.coords.longitude;
+        document.getElementById("lat-lon").innerHTML = "Lat: " + updatedLat + ", Lon: " + updatedLon;        
         console.log("updatedLat: " + updatedLat + " updatedLon: " + updatedLon);
         panorama.setPosition({lat: updatedLat, lng: updatedLon});
       }
-
-    </script>
-    <script async defer
-         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyANiDfdQzJPhx6Vrsy8nkPpwek9A4azbUE&callback=getLocation">
     </script>
   </body>
 </html>
