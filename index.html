@@ -17,8 +17,8 @@
   </head>
   <body>
     <div>
-      <h1 id="heading"></h1>
-      <h1 id="lat-lon"></h1>
+      <p id="heading"></p>
+      <p id="lat-lon"></p>
     </div>
     <div id="street-view"></div>
     <script>
@@ -26,15 +26,20 @@
 
       var heading;
 
-      function deviceOrientationListener(event) {
-        if(event.webkitCompassHeading) {
+      function deviceOrientationListener(event) { //TODO: Figure out why this doesn't seem to be firing on Safari (iOS and Mac)
+        if(event.webkitCompassHeading) { 
           // Apple only works with webkitCompassHeading. Its 0 alpha represents direction device was held when the orientation was first obtained rather than some absolute global direction. https://developer.apple.com/documentation/webkitjs/deviceorientationevent
           heading = event.webkitCompassHeading;
+          document.getElementById("heading").innerHTML = "webkitCompassHeading: " + heading;
+        }
+        else if(event.alpha) {
+          heading = ((360 - event.alpha) % 360);
+          document.getElementById("heading").innerHTML = "alphaHeading: " + heading;
         }
         else {
-          heading = ((360 - event.alpha) % 360);
+          heading = null;
+          document.getElementById("heading").innerHTML = "no heading";
         }
-        document.getElementById("heading").innerHTML = "Heading: " + heading;
       }
 
       var initialLat;
@@ -48,14 +53,14 @@
         }
       }
     
-      initializeGeolocation();
+      setTimeout(initializeGeolocation, 200); //200ms delay to give ample time to get heading from browser
 
       function getInitialLocation(position) {
         initialLat = position.coords.latitude;
         initialLon = position.coords.longitude;
         document.getElementById("lat-lon").innerHTML = "Lat: " + initialLat + ", Lon: " + initialLon;
         console.log("initialLat: " + initialLat + ", initialLon: " + initialLon);
-        loadStreetViewScript();  //TODO: Figure out how to wait to trigger this until we've waited to see whether we're going to get both a location and heading. As is, it often gets to the "Could not fetch heading; defaulting convertedHeading to 0" case prematurely. CAN'T put it anywhere where it will get called each time the heading or location is updated because repeatedly calling loadStreetViewScript() is bad.
+        loadStreetViewScript();
       }
 
       function loadStreetViewScript() {
@@ -73,33 +78,44 @@
           {
             position: {lat: initialLat, lng: initialLon},
             pov: {heading: heading, pitch: 0},
-            zoom: 1,
+            zoom: 0,
             zoomControl: false,
+            imageDateControl: false,
             fullscreenControl: false,
-            addressControl: false,
             panControl: true,
             linksControl: false,
-            motionTrackingControl: false
+            motionTrackingControl: false,
+            showRoadLabels: true,
+            addressControl: true,
+            addressControlOptions: {
+              position: google.maps.ControlPosition.RIGHT_TOP
+            },
+            controlSize: 100
           });
         }
         else {
-          alert("Could not fetch heading; defaulting heading to 0");
-          console.log("Could not fetch heading; defaulting heading to 0");
+          alert("Could not get heading from browser. Defaulting to North");
           panorama = new google.maps.StreetViewPanorama(
           document.getElementById('street-view'),
           {
             position: {lat: initialLat, lng: initialLon},
             pov: {heading: 0, pitch: 0},
-            zoom: 1,
+            zoom: 0,
             zoomControl: false,
+            imageDateControl: false,
             fullscreenControl: false,
-            addressControl: false,
             panControl: true,
             linksControl: false,
-            motionTrackingControl: false
+            motionTrackingControl: false,
+            showRoadLabels: true,
+            addressControl: true,
+            addressControlOptions: {
+              position: google.maps.ControlPosition.RIGHT_TOP
+            },
+            controlSize: 100
           });
         }
-        watchLocation(); //TODO: Figure out how to accomplish this without the browser asking for location permission again
+        watchLocation();
       }
 
       function watchLocation() {
