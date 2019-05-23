@@ -9,24 +9,41 @@
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
+        font-size: 1.5em;
+        font-weight: 800;
+        color: white;
+      }
+      p.hidden {
+        display: none;
       }
       #street-view {
         height: 100%;
       }
+      #overlay {
+        position: fixed;
+        height: auto;
+        width: 100%;
+        background-color: rgba(0,0,0,0.5);
+        top: 0; 
+        left: 0;
+        z-index: 2;
+      }
     </style>
   </head>
   <body>
-    <div>
-      <p id="heading"></p>
-      <p id="lat-lon"></p>
+    <div id="street-view">
     </div>
-    <div id="street-view"></div>
+    <div id="overlay">
+      <p id="address"></p>
+      <p id="heading" class="hidden"></p>
+      <p id="lat-lon" class="hidden"></p>
+    </div>
     <script>
       window.addEventListener('deviceorientation', deviceOrientationListener, false);
 
       var heading;
 
-      function deviceOrientationListener(event) { //TODO: Figure out why this doesn't seem to be firing on Safari (iOS and Mac)
+      function deviceOrientationListener(event) {
         if(event.webkitCompassHeading) { 
           // Apple only works with webkitCompassHeading. Its 0 alpha represents direction device was held when the orientation was first obtained rather than some absolute global direction. https://developer.apple.com/documentation/webkitjs/deviceorientationevent
           heading = event.webkitCompassHeading;
@@ -86,7 +103,7 @@
             linksControl: false,
             motionTrackingControl: false,
             showRoadLabels: true,
-            addressControl: true,
+            addressControl: false,
             addressControlOptions: {
               position: google.maps.ControlPosition.RIGHT_TOP
             },
@@ -108,7 +125,7 @@
             linksControl: false,
             motionTrackingControl: false,
             showRoadLabels: true,
-            addressControl: true,
+            addressControl: false,
             addressControlOptions: {
               position: google.maps.ControlPosition.RIGHT_TOP
             },
@@ -116,6 +133,19 @@
           });
         }
         watchLocation();
+        updateAddress();
+      }
+
+      var updatedAddress;
+
+      function updateAddress() {
+        panorama.addListener('pano_changed', function() {
+          updatedAddress = panorama.getLocation();
+          var updatedAddressArray = Object.values(updatedAddress);
+          var streetAddress = updatedAddressArray[1];
+          console.log(streetAddress);
+          document.getElementById("address").innerHTML = streetAddress;
+        });
       }
 
       function watchLocation() {
