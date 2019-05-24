@@ -178,6 +178,7 @@
         document.getElementById("lat-lon").innerHTML = "Lat: " + updatedLat + ", Lon: " + updatedLon;        
         console.log("updatedLat: " + updatedLat + " updatedLon: " + updatedLon);
         panorama.setPosition({lat: updatedLat, lng: updatedLon});
+        map.panTo({lat: updatedLat, lng: updatedLon});
       }
     </script>
   </body>
