@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
     <title>Street View Containers</title>
     <style>
       html, body {
@@ -9,7 +10,7 @@
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
-        font-size: 1.5em;
+        font-size: 1.0em;
         font-weight: 800;
         color: white;
       }
@@ -17,7 +18,7 @@
         display: none;
       }
       #street-view {
-        height: 100%;
+        height: 80%;
       }
       #overlay {
         position: fixed;
@@ -28,16 +29,25 @@
         left: 0;
         z-index: 2;
       }
+      #map {
+        position: relative;
+        height: 20%;
+        width: 100%;
+        background-color: rgba(0,0,0,0.5);
+        bottom: 0; 
+        left: 0;
+        z-index: 3;
+      }
     </style>
   </head>
   <body>
-    <div id="street-view">
-    </div>
+    <div id="street-view"></div>
     <div id="overlay">
       <p id="address"></p>
       <p id="heading" class="hidden"></p>
       <p id="lat-lon" class="hidden"></p>
     </div>
+    <div id="map"></div>
     <script>
       window.addEventListener('deviceorientation', deviceOrientationListener, false);
 
@@ -88,6 +98,8 @@
 
       var panorama;
 
+      var map;
+
       function initializeStreetView() {
         if (heading) {
           panorama = new google.maps.StreetViewPanorama(
@@ -107,7 +119,7 @@
             addressControlOptions: {
               position: google.maps.ControlPosition.RIGHT_TOP
             },
-            controlSize: 100
+            controlSize: 50
           });
         }
         else {
@@ -129,9 +141,17 @@
             addressControlOptions: {
               position: google.maps.ControlPosition.RIGHT_TOP
             },
-            controlSize: 100
+            controlSize: 50
           });
         }
+        map = new google.maps.Map(
+          document.getElementById('map'), 
+          {
+            center: {lat: initialLat, lng: initialLon},
+            zoom: 15,
+            // disableDefaultUI: true
+          });
+        map.setStreetView(panorama);
         watchLocation();
         updateAddress();
       }
