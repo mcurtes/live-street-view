@@ -46,8 +46,11 @@
     <div id="street-view"></div>
     <div id="overlay">
       <p id="address"></p>
+      <!-- The following are hidden but can be unhidden for debugging -->
       <p id="heading" class="hidden"></p>
+      <p id="pitch" class="hidden"></p>
       <p id="lat-lon" class="hidden"></p>
+      <!-- End debugging elements -->
     </div>
     <div id="map"></div>
     <script>
@@ -73,19 +76,33 @@
 
       var heading;
 
+      var pitch;
+
       function deviceOrientationListener(event) {
-        if(event.webkitCompassHeading) { 
-          // Apple only works with webkitCompassHeading. Its 0 alpha represents direction device was held when the orientation was first obtained rather than some absolute global direction. https://developer.apple.com/documentation/webkitjs/deviceorientationevent
+          // For iOS devices, it's better to use webkitCompassHeading, where 0 represents due north. Otherwise, using the 0 represented using DeviceOrientationEvent is the direction the device was held when the orientation was first obtained. https://developer.apple.com/documentation/webkitjs/deviceorientationevent
+        if(event.webkitCompassHeading && event.beta) { 
           heading = event.webkitCompassHeading;
           document.getElementById("heading").innerHTML = "webkitCompassHeading: " + heading;
+          pitch = (event.beta - 90);
+          document.getElementById("pitch").innerHTML = "event.beta: " + pitch;
         }
-        else if(event.alpha) {
+        else if(event.webkitCompassHeading) { 
+          heading = event.webkitCompassHeading;
+          document.getElementById("heading").innerHTML = "webkitCompassHeading: " + heading;
+          pitch = null;
+          document.getElementById("pitch").innerHTML = "no pitch";
+        }
+        else if(event.alpha && event.beta) {
           heading = ((360 - event.alpha) % 360);
           document.getElementById("heading").innerHTML = "alphaHeading: " + heading;
+          pitch = (event.beta - 90);
+          document.getElementById("pitch").innerHTML = "event.beta: " + pitch;
         }
         else {
           heading = null;
+          pitch = null;
           document.getElementById("heading").innerHTML = "no heading";
+          document.getElementById("pitch").innerHTML = "no pitch";
         }
       }
 
@@ -119,7 +136,28 @@
       var map;
 
       function initializeStreetView() {
-        if (heading) {
+        if (heading && pitch) {
+          panorama = new google.maps.StreetViewPanorama(
+          document.getElementById('street-view'),
+          {
+            position: {lat: initialLat, lng: initialLon},
+            pov: {heading: heading, pitch: pitch},
+            zoom: 0,
+            zoomControl: false,
+            imageDateControl: false,
+            fullscreenControl: false,
+            panControl: true,
+            linksControl: false,
+            motionTrackingControl: false,
+            showRoadLabels: true,
+            addressControl: false,
+            addressControlOptions: {
+              position: google.maps.ControlPosition.RIGHT_TOP
+            },
+            controlSize: 50
+          });
+        }
+        else if (heading) {
           panorama = new google.maps.StreetViewPanorama(
           document.getElementById('street-view'),
           {
