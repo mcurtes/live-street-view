@@ -64,24 +64,6 @@
     </div>
     <div id="map"></div>
     <script>
-      function requireChrome() {
-        if(navigator.userAgent.includes("CriOS") || navigator.userAgent.includes("Android") || navigator.userAgent.includes("Chrome")) {
-          console.log(navigator.userAgent);
-          setTimeout(initializeGeolocation, 200); //200ms delay to give ample time to get heading from browser
-        }
-        else if(navigator.userAgent.includes("Safari") && navigator.userAgent.includes("Mobile")) {
-          console.log(navigator.userAgent);
-          alert("This site is designed for Chrome only");
-          window.location.href = "googlechrome://michaelcurtes.com/streetview";
-        }
-        else {
-          console.log(navigator.userAgent);
-          alert("This site is designed for Chrome only");
-        }
-      }
-
-      requireChrome();
-
       window.addEventListener('deviceorientation', deviceOrientationListener, false);
 
       var heading;
@@ -187,6 +169,9 @@
             },
             controlSize: 50
           });
+        }
+        else if(navigator.userAgent.includes("Safari") && navigator.userAgent.includes("Mobile")) {
+          alert("Please enable motion tracking:\r\n\r\nSettings → Safari →\r\nMotion & Orientation Access");
         }
         else {
           alert("Could not get heading from browser. Defaulting to North");
