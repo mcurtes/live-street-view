@@ -64,6 +64,8 @@
     </div>
     <div id="map"></div>
     <script>
+      setTimeout(initializeGeolocation, 200);
+
       window.addEventListener('deviceorientation', deviceOrientationListener, false);
 
       var heading;
