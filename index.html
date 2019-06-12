@@ -87,7 +87,7 @@
           document.getElementById("pitch").innerHTML = "no pitch";
         }
         else if(event.alpha && event.beta) {
-          heading = ((360 - event.alpha) % 360);
+          heading = event.alpha;
           document.getElementById("heading").innerHTML = "alphaHeading: " + heading;
           pitch = (event.beta - 90);
           document.getElementById("pitch").innerHTML = "event.beta: " + pitch;
