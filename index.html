@@ -102,12 +102,30 @@
 
       var initialLat;
       var initialLon;
-      
+
       function initializeGeolocation() {
         if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(getInitialLocation);
-        } else {
+          navigator.geolocation.getCurrentPosition(getInitialLocation,showLocationError);
+        } 
+        else {
           alert("Geolocation is not supported by this browser.");
+        }
+      }
+
+      function showLocationError(error) {
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            alert("Please enable Location Services for your browser:\r\n\r\nSettings → Privacy →\r\nLocation Services")
+            break;
+          case error.POSITION_UNAVAILABLE:
+            alert("Your location isn't unavailable.")
+            break;
+          case error.TIMEOUT:
+            alert("Trying to get your location timed out.")
+            break;
+          case error.UNKNOWN_ERROR:
+            alert("Hmm. Something went wrong.\r\n\r\nPlease try again.")
+            break;
         }
       }
 
@@ -173,7 +191,26 @@
           });
         }
         else if(navigator.userAgent.includes("Safari") && navigator.userAgent.includes("Mobile")) {
-          alert("Please enable motion tracking:\r\n\r\nSettings → Safari →\r\nMotion & Orientation Access");
+          alert("Please enable Safari motion tracking:\r\n\r\nSettings → Safari →\r\nMotion & Orientation Access");
+          panorama = new google.maps.StreetViewPanorama(
+          document.getElementById('street-view'),
+          {
+            position: {lat: initialLat, lng: initialLon},
+            pov: {heading: 0, pitch: 0},
+            zoom: 0,
+            zoomControl: false,
+            imageDateControl: false,
+            fullscreenControl: false,
+            panControl: true,
+            linksControl: false,
+            motionTrackingControl: false,
+            showRoadLabels: true,
+            addressControl: false,
+            addressControlOptions: {
+              position: google.maps.ControlPosition.RIGHT_TOP
+            },
+            controlSize: 50
+          });
         }
         else {
           alert("Could not get heading from browser. Defaulting to North");
