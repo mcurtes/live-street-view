@@ -122,16 +122,16 @@
       function showLocationError(error) {
         switch(error.code) {
           case error.PERMISSION_DENIED:
-            alert("Please enable Location Services for your browser:\r\n\r\nSettings → Privacy →\r\nLocation Services")
+            alert("Please enable location permssions for your browser")
             break;
           case error.POSITION_UNAVAILABLE:
-            alert("Your location isn't unavailable.")
+            alert("Your location isn't unavailable")
             break;
           case error.TIMEOUT:
-            alert("Trying to get your location timed out.")
+            alert("Trying to get your location timed out")
             break;
           case error.UNKNOWN_ERROR:
-            alert("Hmm. Something went wrong.\r\n\r\nPlease try again.")
+            alert("Something went wrong\r\n\r\nPlease try again")
             break;
         }
       }
