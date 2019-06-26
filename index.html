@@ -65,6 +65,8 @@
       <p id="address"></p>
       <!-- The following are hidden but can be unhidden for debugging -->
       <p id="heading" class="hidden"></p>
+      <p id="street-view-heading" class="hidden"></p>
+      <p id="heading-delta" class="hidden"></p>
       <p id="pitch" class="hidden"></p>
       <p id="lat-lon" class="hidden"></p>
       <!-- End debugging elements -->
@@ -244,6 +246,7 @@
         initializeMap();
         watchLocation();
         updateAddress();
+        correctPov();
       }
 
       function initializeMap() {
@@ -283,6 +286,23 @@
           var updatedAddressArray = Object.values(updatedAddress);
           var shortDescription = updatedAddressArray[1];
           document.getElementById("address").innerHTML = shortDescription;
+        });
+      }
+
+      var updatedPanoPov;
+
+      // If the device compass heading has become too far out of sync with street view, reset street view heading to match compass
+      function correctPov() {
+        panorama.addListener('pov_changed', function() {
+          updatedPanoPov = panorama.getPov().heading;
+          document.getElementById("street-view-heading").innerHTML = "updatedPanoPov: " + updatedPanoPov;
+          if (heading) {
+            var povDelta = Math.min((Math.abs(updatedPanoPov - heading)), (Math.abs(heading - updatedPanoPov)), Math.abs(360 - (Math.abs(updatedPanoPov + heading))));
+            document.getElementById("heading-delta").innerHTML = "povDelta: " + povDelta;
+            if (povDelta > 90) {
+              panorama.setPov({heading: povDelta, pitch: 0});
+            }
+          }
         });
       }
     </script>
