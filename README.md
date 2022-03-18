@@ -2,7 +2,7 @@
 ## Description
 Live Street View tracks your device's current position (latitude+longitude), compass heading, and pitch (its tilt relative to the horizon) and shows the closest corresponding Google Street View.
 
-To demo: 
+## To demo: 
 1. Visit https://michaelcurtes.com/livestreetview, ideally with a mobile browser that supports location, orientation, and motion tracking
 2. Tap the "Enable Motion Tracking" if it's presented
 3. Walk, ride drive, and move your device around and observe the world around you, as recorded in Google Street View
