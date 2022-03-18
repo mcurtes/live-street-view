@@ -7,4 +7,4 @@ To demo:
 2. Tap the "Enable Motion Tracking" if it's presented
 3. Move your device around and observe the world around you
 
-![image](https://user-images.githubusercontent.com/1659459/159081149-06d138a9-48e9-45e1-ba1c-9858379421c1.png)
+![ezgif-5-5e604c73bb](https://user-images.githubusercontent.com/1659459/159081526-e37dadc1-5769-48bb-8538-31b61bcd18e4.gif)
