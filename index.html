@@ -60,6 +60,24 @@
     </style>
   </head>
   <body>
+    <script>
+    function requestOrientationPermission() {
+      // detect whether the browser requires a user interaction in order to grant device orientation access permission (like iOS 13+)
+      // See https://developer.mozilla.org/en-US/docs/Web/API/DeviceOrientationEvent#browser_compatibility
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              window.addEventListener('deviceorientation', () => {});
+              // remove button if we successfully get permission
+              var orientationPermissionBtn = document.getElementById("orientation-permission-btn");
+              orientationPermissionBtn.remove();
+            }
+          })
+          .catch(console.error);
+      }
+    }
+    </script>
     <div id="street-view"></div>
     <div id="overlay">
       <p id="address"></p>
@@ -200,7 +218,14 @@
           });
         }
         else if(navigator.userAgent.includes("Safari") && navigator.userAgent.includes("Mobile")) {
-          alert("Please enable Safari motion tracking:\r\n\r\nSettings → Safari →\r\nMotion & Orientation Access");
+          // add a button that triggers the browser permission dialog
+          let orientationPermissionBtn = document.createElement("button");
+          orientationPermissionBtn.innerHTML = "Enable Motion Tracking";
+          orientationPermissionBtn.setAttribute("id","orientation-permission-btn");
+          orientationPermissionBtn.setAttribute("onclick","requestOrientationPermission()");
+          var overlay = document.getElementById("overlay");
+          overlay.appendChild(orientationPermissionBtn);
+
           panorama = new google.maps.StreetViewPanorama(
           document.getElementById('street-view'),
           {
