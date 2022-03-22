@@ -32,7 +32,7 @@
         color: white;
         background-color: black;
       }
-      p.hidden {
+      p.debug {
         display: none;
       }
       #street-view {
@@ -57,36 +57,57 @@
         left: 0;
         z-index: 3;
       }
+      dialog {
+        width: 60%;
+        text-align: center;
+        font-size: 1.1em;
+        font-weight: 700;
+        border: none !important;
+      }
+      button.dialog {
+        width: 100%;
+        text-align: center;
+        font-size: 1.0em;
+        font-weight: 600;
+      }   
     </style>
   </head>
   <body>
     <script>
     function requestOrientationPermission() {
-      // detect whether the browser requires a user interaction in order to grant device orientation access permission (like iOS 13+)
+      // Detect whether the browser requires a user interaction in order to grant device orientation access permission (like iOS 13+)
       // See https://developer.mozilla.org/en-US/docs/Web/API/DeviceOrientationEvent#browser_compatibility
       if (typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission()
           .then(permissionState => {
-            if (permissionState === 'granted') {
+            if (permissionState === 'granted') { // If we successfully get permission...
               window.addEventListener('deviceorientation', () => {});
-              // remove button if we successfully get permission
+
+              // ...remove the dialog
+              window.orientationPermissionDialog.close();
+
+              // ...remove the button we added in response to user's initial response to 
               var orientationPermissionBtn = document.getElementById("orientation-permission-btn");
-              orientationPermissionBtn.remove();
+              orientationPermissionBtn.style.display="none";
             }
           })
           .catch(console.error);
       }
     }
     </script>
+    <dialog id="orientationPermissionDialog">
+      Please tap "Allow" on the following dialog<br/><br/>
+      <button class="dialog" onclick="requestOrientationPermission();">I'm ready to tap 'Allow'</button>
+    </dialog>
     <div id="street-view"></div>
     <div id="overlay">
       <p id="address"></p>
       <!-- The following are hidden but can be unhidden for debugging -->
-      <p id="heading" class="hidden"></p>
-      <p id="street-view-heading" class="hidden"></p>
-      <p id="heading-delta" class="hidden"></p>
-      <p id="pitch" class="hidden"></p>
-      <p id="lat-lon" class="hidden"></p>
+      <p id="heading" class="debug"></p>
+      <p id="street-view-heading" class="debug"></p>
+      <p id="heading-delta" class="debug"></p>
+      <p id="pitch" class="debug"></p>
+      <p id="lat-lon" class="debug"></p>
       <!-- End debugging elements -->
     </div>
     <div id="map"></div>
@@ -218,13 +239,8 @@
           });
         }
         else if(navigator.userAgent.includes("Safari") && navigator.userAgent.includes("Mobile")) {
-          // add a button that triggers the browser permission dialog
-          let orientationPermissionBtn = document.createElement("button");
-          orientationPermissionBtn.innerHTML = "Enable Motion Tracking";
-          orientationPermissionBtn.setAttribute("id","orientation-permission-btn");
-          orientationPermissionBtn.setAttribute("onclick","requestOrientationPermission()");
-          var overlay = document.getElementById("overlay");
-          overlay.appendChild(orientationPermissionBtn);
+          // pop an HTML dialog that will, in turn, trigger the browser permission dialog
+          window.orientationPermissionDialog.showModal();      
 
           panorama = new google.maps.StreetViewPanorama(
           document.getElementById('street-view'),
@@ -248,6 +264,7 @@
         }
         else {
           alert("Could not get heading from browser. Defaulting to North");
+
           panorama = new google.maps.StreetViewPanorama(
           document.getElementById('street-view'),
           {
